@@ -20,7 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
@@ -40,11 +40,6 @@ import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.integration.AppManager;
 
 import java.security.MessageDigest;
-
-import static com.jess.arms.integration.AppManager.APP_EXIT;
-import static com.jess.arms.integration.AppManager.KILL_ALL;
-import static com.jess.arms.integration.AppManager.SHOW_SNACKBAR;
-import static com.jess.arms.integration.AppManager.START_ACTIVITY;
 
 /**
  * ================================================
@@ -82,16 +77,52 @@ public class ArmsUtils {
         v.setHint(new SpannedString(ss)); // 一定要进行转换,否则属性会消失
     }
 
-
     /**
-     * dip转pix
+     * dp 转 px
      *
-     * @param dpValue
-     * @return
+     * @param context {@link Context}
+     * @param dpValue {@code dpValue}
+     * @return {@code pxValue}
      */
-    public static int dip2px(Context context, float dpValue) {
+    public static int dip2px(@NonNull Context context, float dpValue) {
         final float scale = getResources(context).getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+    /**
+     * px 转 dp
+     *
+     * @param context {@link Context}
+     * @param pxValue {@code pxValue}
+     * @return {@code dpValue}
+     */
+    public static int pix2dip(@NonNull Context context, int pxValue) {
+        final float scale = getResources(context).getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
+
+    /**
+     * sp 转 px
+     *
+     * @param context {@link Context}
+     * @param spValue {@code spValue}
+     * @return {@code pxValue}
+     */
+    public static int sp2px(@NonNull Context context, float spValue) {
+        final float fontScale = getResources(context).getDisplayMetrics().scaledDensity;
+        return (int) (spValue * fontScale + 0.5f);
+    }
+
+    /**
+     * px 转 sp
+     *
+     * @param context {@link Context}
+     * @param pxValue {@code pxValue}
+     * @return {@code spValue}
+     */
+    public static int px2sp(@NonNull Context context, float pxValue) {
+        final float fontScale = getResources(context).getDisplayMetrics().scaledDensity;
+        return (int) (pxValue / fontScale + 0.5f);
     }
 
     /**
@@ -107,15 +138,6 @@ public class ArmsUtils {
     public static String[] getStringArray(Context context, int id) {
         return getResources(context).getStringArray(id);
     }
-
-    /**
-     * pix转dip
-     */
-    public static int pix2dip(Context context, int pix) {
-        final float densityDpi = getResources(context).getDisplayMetrics().density;
-        return (int) (pix / densityDpi + 0.5f);
-    }
-
 
     /**
      * 从 dimens 中获得尺寸
@@ -223,28 +245,28 @@ public class ArmsUtils {
 
     /**
      * 使用 {@link Snackbar} 显示文本消息
+     * Arms 已将 com.android.support:design 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
+     * 因为 Snackbar 在 com.android.support:design 库中, 所以如果框架使用者没有自行依赖 com.android.support:design
+     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.android.support:design 了
+     * 因为在 arms-autolayout 库中已经依赖有 com.android.support:design
      *
      * @param text
      */
     public static void snackbarText(String text) {
-        Message message = new Message();
-        message.what = SHOW_SNACKBAR;
-        message.obj = text;
-        message.arg1 = 0;
-        AppManager.post(message);
+        AppManager.getAppManager().showSnackbar(text, false);
     }
 
     /**
      * 使用 {@link Snackbar} 长时间显示文本消息
+     * Arms 已将 com.android.support:design 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
+     * 因为 Snackbar 在 com.android.support:design 库中, 所以如果框架使用者没有自行依赖 com.android.support:design
+     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.android.support:design 了
+     * 因为在 arms-autolayout 库中已经依赖有 com.android.support:design
      *
      * @param text
      */
     public static void snackbarTextWithLong(String text) {
-        Message message = new Message();
-        message.what = SHOW_SNACKBAR;
-        message.obj = text;
-        message.arg1 = 1;
-        AppManager.post(message);
+        AppManager.getAppManager().showSnackbar(text, true);
     }
 
 
@@ -260,27 +282,21 @@ public class ArmsUtils {
 
 
     /**
-     * 跳转界面 1 ,通过 {@link AppManager#startActivity(Class)}
+     * 跳转界面 1, 通过 {@link AppManager#startActivity(Class)}
      *
      * @param activityClass
      */
     public static void startActivity(Class activityClass) {
-        Message message = new Message();
-        message.what = START_ACTIVITY;
-        message.obj = activityClass;
-        AppManager.post(message);
+        AppManager.getAppManager().startActivity(activityClass);
     }
 
     /**
-     * 跳转界面 2 ,通过 {@link AppManager#startActivity(Intent)}
+     * 跳转界面 2, 通过 {@link AppManager#startActivity(Intent)}
      *
      * @param
      */
     public static void startActivity(Intent content) {
-        Message message = new Message();
-        message.what = START_ACTIVITY;
-        message.obj = content;
-        AppManager.post(message);
+        AppManager.getAppManager().startActivity(content);
     }
 
 
@@ -429,26 +445,22 @@ public class ArmsUtils {
     }
 
     /**
-     * 远程遥控 {@link AppManager#killAll()}
+     * 执行 {@link AppManager#killAll()}
      */
     public static void killAll() {
-        Message message = new Message();
-        message.what = KILL_ALL;
-        AppManager.post(message);
+        AppManager.getAppManager().killAll();
     }
 
     /**
-     * 远程遥控 {@link AppManager#appExit()}
+     * 执行 {@link AppManager#appExit()}
      */
     public static void exitApp() {
-        Message message = new Message();
-        message.what = APP_EXIT;
-        AppManager.post(message);
+        AppManager.getAppManager().appExit();
     }
 
     public static AppComponent obtainAppComponentFromContext(Context context) {
         Preconditions.checkNotNull(context, "%s cannot be null", Context.class.getName());
-        Preconditions.checkState(context.getApplicationContext() instanceof App, "Application does not implements App");
+        Preconditions.checkState(context.getApplicationContext() instanceof App, "%s must be implements %s", context.getApplicationContext().getClass().getName(), App.class.getName());
         return ((App) context.getApplicationContext()).getAppComponent();
     }
 

@@ -109,7 +109,7 @@ public class AppDelegate implements App, AppLifecycles {
         //使用 IntelligentCache.KEY_KEEP 作为 key 的前缀, 可以使储存的数据永久存储在内存中
         //否则存储在 LRU 算法的存储空间中 (大于或等于缓存所能允许的最大 size, 则会根据 LRU 算法清除之前的条目)
         //前提是 extras 使用的是 IntelligentCache (框架默认使用)
-        mAppComponent.extras().put(IntelligentCache.KEY_KEEP + ConfigModule.class.getName(), mModules);
+        mAppComponent.extras().put(IntelligentCache.getKeyOfKeep(ConfigModule.class.getName()), mModules);
 
         this.mModules = null;
 
@@ -200,8 +200,9 @@ public class AppDelegate implements App, AppLifecycles {
     @Override
     public AppComponent getAppComponent() {
         Preconditions.checkNotNull(mAppComponent,
-                "%s cannot be null,first call %s#onCreate(Application) in %s#onCreate()",
-                AppComponent.class.getName(), getClass().getName(), Application.class.getName());
+                "%s == null, first call %s#onCreate(Application) in %s#onCreate()",
+                AppComponent.class.getName(), getClass().getName(), mApplication == null
+                        ? Application.class.getName() : mApplication.getClass().getName());
         return mAppComponent;
     }
 
@@ -260,7 +261,7 @@ public class AppDelegate implements App, AppLifecycles {
 //                case TRIM_MEMORY_MODERATE:
 
 
-            //系统正运行与低内存的状态并且你的进程正处于 LRU 列表中最容易被杀掉的位置, 你应该释放任何不影响你的 App 恢复状态的资源
+            //系统正运行于低内存的状态并且你的进程正处于 LRU 列表中最容易被杀掉的位置, 你应该释放任何不影响你的 App 恢复状态的资源
             //低于 API 14 的 App 可以使用 onLowMemory 回调
 //                case TRIM_MEMORY_COMPLETE:
         }
@@ -279,7 +280,7 @@ public class AppDelegate implements App, AppLifecycles {
          */
         @Override
         public void onLowMemory() {
-            //系统正运行与低内存的状态并且你的进程正处于 LRU 列表中最容易被杀掉的位置, 你应该释放任何不影响你的 App 恢复状态的资源
+            //系统正运行于低内存的状态并且你的进程正处于 LRU 列表中最容易被杀掉的位置, 你应该释放任何不影响你的 App 恢复状态的资源
         }
     }
 
